@@ -9,3 +9,9 @@ struct bornes{
 	unsigned int b;
 	struct bornes *next;
 };
+
+struct linked_img{
+	unsigned int height;
+	struct linked_img *next;
+	char *img;
+};

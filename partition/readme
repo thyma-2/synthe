@@ -1,0 +1,5 @@
+lecteur automatique de partition
+-------------------------------
+objectif actuel : 
+faire un programme prennant en entrée le chemin d'une image de parttion
+et renvoyant en sortie un string correspondant aux notes de la partition

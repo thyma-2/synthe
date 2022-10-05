@@ -1,6 +1,9 @@
 #include "read.h"
 
-struct bornes* append(struct bornes *head, int t, int b)
+int width, height, nrChannels;
+
+
+struct bornes* append_b(struct bornes *head, int t, int b)
 {
 	struct bornes *n = malloc(sizeof(struct bornes));
 	n->t = t;
@@ -15,13 +18,35 @@ struct bornes* append(struct bornes *head, int t, int b)
 	return head;
 }
 
+struct linked_img *find_last(struct linked_img *head)
+{
+	while (head->next != NULL)
+		head = head->next;
+	return head;
+}
+
+struct linked_img* append_i(struct linked_img *head, int h)
+{
+	struct linked_img *n = malloc(sizeof(struct linked_img));
+	n->height = h;
+	n->img = malloc(h*width);	
+	n->next = NULL;
+	if (head == NULL)
+		return n;
+	struct linked_img *p= head;
+	while (p->next != NULL)
+		p = p->next;
+	p->next = n;
+	return head;
+}
+
 int main(int argc, char **argv)
 {
-	int width, height, nrChannels;
     unsigned char *data = stbi_load(argv[1], &width, &height, &nrChannels, 0);
-	unsigned char *img = data;
+	unsigned char *binary_img = data;
 
-	struct bornes *head = NULL;
+	struct bornes *head_b = NULL;
+	struct linked_img *head_i = NULL;
 
 	printf ("%d %d %d\n", width, height, nrChannels);
 
@@ -30,38 +55,36 @@ int main(int argc, char **argv)
 
 	if (nrChannels == 3)
 	{
-		img = malloc(width*height);
-		for (int i = 0; i < height; i++)
-	        for (int j = 0; j < width; j++)
-				img[width*i+j] = 255 * ((data[width*i*3 + j*3] * 333/1000 + data[width*i*3 + j*3 + 1] * 333/1000 + data[width*i*3 + j*3 + 2] * 333/1000) > 127.5);
+		binary_img = malloc(width*height);
+		for (unsigned int i = 0; i < height; i++)
+	        for (unsigned int j = 0; j < width; j++)
+				binary_img[width*i+j] = 255 * ((data[width*i*3 + j*3] * 333/1000 + data[width*i*3 + j*3 + 1] * 333/1000 + data[width*i*3 + j*3 + 2] * 333/1000) > 127.5);
 	}
 	
 	else if (nrChannels == 1)
 	{
-		for (int i = 0; i < height; i++)
-			for (int j = 0; j < width; j++)
-				img[width*i+j] = 255 * (img[width*i+j] > 127.5);
+		for (unsigned int i = 0; i < height; i++)
+			for (unsigned int j = 0; j < width; j++)
+				binary_img[width*i+j] = 255 * (binary_img[width*i+j] > 127.5);
 	}
 	
 	int n = 0;
 	int l = 255;
 	int t = 0;
 	int b = 0;
-	for (int i = 0; i < height; i++)
+	int e = 0;
+	for (unsigned int i = 0; i < height; i++)
 	{
 		int sum = 0;
-		for (int j = 0; j < width; j++)
-			if (img[width*i+j] == 0)
+		for (unsigned int j = 0; j < width; j++)
+			if (binary_img[width*i+j] == 0)
 				sum += 1;
 		if (sum *2 > width)
 		{
 			if (l == 255)
 			{
 				if (n == 0)
-				{
-					b = i;
-					head = append(head, t,b);
-				}
+					t = i;
 			}
 			
 			l = 0;
@@ -73,21 +96,34 @@ int main(int argc, char **argv)
 				n += 1;
 				if (n == 5)
 				{
-					t = i + (i - b)/1.5;
+					b = i;
+					e = b-t;		
 					n = 0;
+					head_b = append_b(head_b, t-e/2,b+e/2);
 				}
 			}
 			l = 255;
 		}
 	}
-	head = append(head, t,height);
 	
-	for (int i = 0; i < height; i++)
-		for (struct bornes *p = head; p != NULL; p = p->next)
-			if (p->t < i && p->b > i)
-				for (int j = 0; j < width; j++)	
-					img[width*i+j] = 255;
+	for (struct bornes *p = head_b; p != NULL; p = p->next)
+	{
+		head_i = append_i(head_i, p->b-p->t);
+		struct linked_img *current = find_last(head_i);
+		for (int i = p->t; i < p->b; i++)
+			for (int j = 0; j < width; j++)
+				current->img[(i-p->t)*width+j] = binary_img[width*i+j];
 
+	}
+	
+	free(binary_img);
+	char x = 'a';
+	char path_out[] = "outx.png";
+	for (struct linked_img *p = head_i; p != NULL; p = p->next)
+	{
+		path_out[3] = x;
+		x += 1;
+		stbi_write_png(path_out, width, p->height, 1, p->img, width);
+	}
 
-	stbi_write_png("out.png", width, height, 1, img, width);
 }
