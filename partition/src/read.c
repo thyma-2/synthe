@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 					b = i;
 					e = b-t;		
 					n = 0;
-					head_b = append_b(head_b, t-e/2,b+e/2);
+					head_b = append_b(head_b, t-e/2,b+e/1.4);
 				}
 			}
 			l = 255;
