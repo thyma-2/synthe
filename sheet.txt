@@ -1,0 +1,14 @@
+data/C1A-01.raw 2 220 
+,,
+data/C1A-01.raw 1 165
+,
+data/C1A-01.raw 1 175
+,
+data/C1A-01.raw 1 196
+,,
+data/C1A-01.raw 1 175
+,
+data/C1A-01.raw 1 165
+,
+data/C1A-01.raw 1 147
+,
